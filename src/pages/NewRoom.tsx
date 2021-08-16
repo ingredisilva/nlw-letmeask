@@ -1,16 +1,35 @@
-
-import { useContext } from 'react';
+//import { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { FormEvent } from 'react';
 import illustrationImg from '../assets/img/illustration.svg';
 import logoImg from '../assets/img/logo.svg';
 import googleIconImg from '../assets/img/google-icon.svg';
 import { Button } from '../components/Button';
+import { useAuth } from '../hooks/useAuth'
+import { database } from '../Services/firebase';
+
 
 import '../styles/auth.scss';
 
 export function NewRoom() {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
 
+    const [newRoom, setNewRoom] = useState('');
+
+    async function handleCreateRoom(event: FormEvent) {
+        event.preventDefault();
+
+        if (newRoom.trim() === '') {
+            return;
+        }
+
+        const roomRef = database.ref('rooms');
+
+        const firebaseRoom = await roomRef.push({
+            title: newRoom,
+            authorId: user?.id,
+        });
+    }
 
     return (
         <div id="page-auth">
@@ -25,7 +44,11 @@ export function NewRoom() {
                     <h2>Criar uma nova sala</h2>
                     <form>
                         <input type="text"
-                            placeholder="Nome da Sala" />
+                            placeholder="Nome da Sala"
+                            onChange={event => setNewRoom(event.target.value)}
+                            value={newRoom}
+                        />
+
                         <Button type="submit">
                             Criar Sala
                         </Button>
